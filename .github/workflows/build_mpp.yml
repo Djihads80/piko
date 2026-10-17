@@ -1,0 +1,30 @@
+name: Build mpp
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Gradle
+        uses: burrunan/gradle-cache-action@v3
+
+      - name: Build
+        env:
+          # If this fails with 401, add a token with read:packages as secret GPR_KEY
+          GITHUB_TOKEN: ${{ secrets.GPR_KEY || secrets.GITHUB_TOKEN }}
+        run: ./gradlew clean buildAndroid
+
+      - name: Upload mpp
+        uses: actions/upload-artifact@v4
+        with:
+          name: patches
+          path: "**/build/libs/*.mpp"
